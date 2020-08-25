@@ -89,3 +89,21 @@ class Comment(models.Model):
                                    )
 
 
+class Follow(models.Model):
+    """
+        Description of the follow model.
+        Parameters
+        -------
+        user: CharField()
+            The name. Max length 200
+        author: ForeignKey, link -> User
+            Author of the post
+    """
+    user = models.ForeignKey(User,
+                             on_delete=models.CASCADE,
+                             related_name="follower"
+                             )
+    author = models.ForeignKey(User,
+                              on_delete=models.CASCADE,
+                              related_name="following",
+                               )
