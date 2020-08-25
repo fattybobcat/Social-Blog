@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Список сообщений{% endblock %}
+
+{% block sidebar %}
+    <ul>
+        <li><a href="/">Главная</a></li>
+        <li><a href="/about/">О сайте</a></li>
+        <li><a href="/list/" class="active">Сообщения</a></li>
+    </ul>
+{% endblock %}
+
+{% block content %}
+    {% for msg in messages %}
+        <h2>{{ msg.title }}, от {{ msg.from }}</h2>
+        <p>{{ msg.body }}</p>
+    {% endfor %}
+{% endblock %}

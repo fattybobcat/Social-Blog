@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %} Последние обновления {% endblock %}
+{% block content %}
+
+<h1> Последние обновления на сайте</h1>
+{% load cache %}
+{% cache 20 index_page %}
+    {% for post in page %}
+        <h3>
+            Автор: {{ post.author }}, Дата публикации: {{ post.pub_date|date:"d M Y" }}
+        </h3>
+        {% include 'includes/post_item.html'  with author=post.author post=post %}
+        {% if not forloop.last %}<hr>{% endif %}
+    {% endfor %}
+{% endcache %}
+{% if page.has_other_pages %}
+    {% include "includes/paginator.html" with items=page paginator=paginator %}
+{% endif %}
+****
+{% endblock %}

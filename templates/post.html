@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %} Пост {% endblock %}
+{% block header %} Пост{% endblock %}
+{% block content %}
+{% load thumbnail %}
+{% load user_filters %}
+<div class="row">
+    <div class="col-md-3 mb-3 mt-1">
+        {% include 'includes/profile_info.html' %}
+    </div>
+
+    <div class="col-md-9">
+        <!-- Пост -->
+        {% include 'includes/post_item.html' %}
+        {%include 'comments.html' %}
+    </div>
+    </div>
+
+</div>
+{% endblock %}

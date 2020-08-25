@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %} Профайл {{author}} {% endblock %}
+{% block header %} Профайл {{author}}{% endblock %}
+{% block content %}
+{% load user_filters %}
+<div class="row">
+    <div class="col-md-3 mb-3 mt-1">
+        {% include 'includes/profile_info.html' %}
+    </div>
+    <div class="col-md-9">
+        <!-- Начало блока с отдельным постом -->
+        {% for post in page %}
+            {% include 'includes/post_item.html'  with author=post.author post=post %}
+            <!-- Конец блока с отдельным постом --
+        <!-- Остальные посты -->
+        {% endfor %}
+
+        {% if page.has_other_pages %}
+            {% include "includes/paginator.html" with items=page paginator=paginator %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
