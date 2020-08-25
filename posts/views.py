@@ -3,7 +3,7 @@ from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import PostForm, CommentForm
-from .models import Group, Post, User, Comment
+from .models import Group, Post, User, Comment, Follow
 
 
 def index(request):
@@ -146,11 +146,13 @@ def follow_index(request):
 
 @login_required
 def profile_follow(request, username):
+    #user = request.user
     author = get_object_or_404(User, username=username)
-    if author==request.user:
-        return redirect('profile', username)
+    # if author==request.user:
+    #     return redirect('profile', username)
     Follow.objects.get_or_create(user=request.user, author=author)
     return redirect('profile', username)
+
 
 
 @login_required
