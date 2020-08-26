@@ -175,8 +175,8 @@ class FollowTest(TestCase):
         self.client3.force_login(self.user3)
         self.client_anon = Client()
 
-    def test_following_and_unfollowing_authuser(self):
-        print("Test 2-1. Follow and unfollow by auth user")
+    def test_following_authuser(self):
+        print("Test 2-1. Follow by auth user")
         user2_profile = self.client.get(
             reverse("profile",
                     kwargs={"username": self.user2.username})
@@ -191,6 +191,18 @@ class FollowTest(TestCase):
         )
         self.assertContains(user2_profile, "Отписаться")
         self.assertEqual(len(Follow.objects.all()), 1)
+
+    def test_unfollowing_authuser(self):
+        print("Test 2-2. Unfollow by auth user")
+        self.client.get(reverse("profile_follow",
+                                kwargs={"username": self.user2.username})
+                        )
+        self.assertEqual(len(Follow.objects.all()), 1)
+        user2_profile = self.client.get(
+            reverse("profile",
+                    kwargs={"username": self.user2.username})
+        )
+        self.assertContains(user2_profile, "Отписаться")
         self.client.get(reverse("profile_unfollow",
                                 kwargs={"username": self.user2.username})
                         )
@@ -202,7 +214,7 @@ class FollowTest(TestCase):
         self.assertEqual(len(Follow.objects.all()), 0)
 
     def test_following_post_in_lent(self):
-        print("Test 2-2. new post in follow-lent ",
+        print("Test 2-3. New post in follow-lent ",
               "for followers and not post for unfollowers")
         response_code = self.client.get(
             reverse("profile_follow",
@@ -221,7 +233,7 @@ class FollowTest(TestCase):
         self.assertNotContains(response_code, text_post_user_2)
 
     def test_only_auth_user_can_commit_post(self):
-        print("Test 2-2. Add new commit by auth user")
+        print("Test 2-4. Add new commit by auth user")
         post_1 = Post.objects.get(pk=1)
         text_comment = "Commentary1"
         text_comment2 = "Commentary2"

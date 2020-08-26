@@ -109,3 +109,6 @@ class Follow(models.Model):
                                null=True,
                                related_name="following",
                                )
+
+    class Meta:
+        unique_together = [["user", "author"]]
