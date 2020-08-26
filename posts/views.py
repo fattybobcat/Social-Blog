@@ -60,6 +60,7 @@ def profile(request, username):
     follower_count = author.follower.count()
     paginator = Paginator(author_posts, 3)
     page = paginator.get_page(request.GET.get("page"))
+    following = author.following.all()
     return render(request, "profile.html", {
         "page": page,
         "paginator": paginator,
@@ -67,6 +68,7 @@ def profile(request, username):
         "author": author,
         "following_count": following_count,
         "follower_count": follower_count,
+        "following": following,
     })
 
 
@@ -78,6 +80,7 @@ def post_view(request, username, post_id):
     follower_count = author.follower.count()
     items = post.comments.all()
     form = CommentForm()
+    following = author.following.all()
     return render(request,
                   "post.html",
                   {"post": post,
@@ -87,6 +90,7 @@ def post_view(request, username, post_id):
                    "form": form,
                    "following_count": following_count,
                    "follower_count": follower_count,
+                   "following": following,
                    })
 
 
@@ -146,10 +150,9 @@ def follow_index(request):
 
 @login_required
 def profile_follow(request, username):
-    #user = request.user
     author = get_object_or_404(User, username=username)
-    # if author==request.user:
-    #     return redirect('profile', username)
+    if author==request.user:
+         return redirect('profile', username)
     Follow.objects.get_or_create(user=request.user, author=author)
     return redirect('profile', username)
 

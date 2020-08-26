@@ -22,7 +22,7 @@
                 Записей: {{ posts_count }}
             </div>
         </li>
-
+        {% if author.username != user.username %}
         <li class="list-group-item">
             {% if following %}
                 <a class="btn btn-lg btn-light"
@@ -34,8 +34,9 @@
                     href="{% url 'profile_follow' author.username %}" role="button">
                     Подписаться
                 </a>
-
+            {% endif %}
         </li>
         {% endif %}
+
     </ul>
 </div>

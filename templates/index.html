@@ -5,7 +5,7 @@
 <div class="container">
 
     {% include "includes/menu.html" with index=True   %}
-<h1> Последние обновления ваших подписок</h1>
+<h1> Последние обновления </h1>
 {% load cache %}
 {% cache 20 index_page %}
     {% for post in page %}
