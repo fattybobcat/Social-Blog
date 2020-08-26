@@ -80,8 +80,8 @@ class Comment(models.Model):
                              related_name="comments"
                              )
     author = models.ForeignKey(User,
-                              on_delete=models.CASCADE,
-                              related_name="comments",
+                               on_delete=models.CASCADE,
+                               related_name="comments",
                                )
     text = models.TextField()
     created = models.DateTimeField("created",
@@ -102,10 +102,10 @@ class Follow(models.Model):
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE,
                              null=True,
-                             related_name="follower"
+                             related_name="follower",
                              )
     author = models.ForeignKey(User,
-                              on_delete=models.CASCADE,
-                              null=True,
-                              related_name="following",
+                               on_delete=models.CASCADE,
+                               null=True,
+                               related_name="following",
                                )

@@ -1,8 +1,10 @@
+from django.core.cache import cache
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase
 from django.urls import reverse
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.core.cache import cache
-from .models import Group, Post, User
+
+from .models import Follow, Group, Post, User
+
 
 class PostTest(TestCase):
 
@@ -50,7 +52,8 @@ class PostTest(TestCase):
         """Create post and check in DB & url"""
         print("Test 2. Create post. Check in DB and url")
         text_new = "kiss me on my shiny!(с) Bender"
-        response = self.client.post(reverse("new_post"), {"text": text_new})
+        self.client.post(reverse("new_post"),
+                         {"text": text_new})
         post_count = Post.objects.filter(text=text_new).count()
         self.assertEqual(post_count, 1)
         post = Post.objects.get(text=text_new)
@@ -121,7 +124,7 @@ class PostTest(TestCase):
                 self.assertContains(respose, "<img")
 
     def test_load_no_mage(self):
-        print("Test 8. Test 8. Not image load in post")
+        print("Test 8. Not image load in post")
         not_img = SimpleUploadedFile(
             name='some.txt',
             content=b'abc',
@@ -141,19 +144,109 @@ class PostTest(TestCase):
                    'или не является изображением.',
         )
 
-    def test_cached_post_index(self):
-        print("Test 9. Cache post on index")
-        self.client.get("index")
-        post_c = Post.objects.all().count()
-        print(post_c)
-        self.client.post(reverse("new_post"), {"text": "testcached2"})
-        post_c = Post.objects.all().count()
-        print(post_c)
-        self.client.post(reverse("new_post"), {"text": "testcached3"})
-        post_c = Post.objects.all().count()
-        print(post_c)
-        response = self.client.get(reverse("index"))
 
-        self.assertEqual(response.context['paginator'].count, 2)
+class FollowTest(TestCase):
+    """"Tests group2. 1. Follow and unfollow"""
+    def setUp(self):
+        self.client = Client()
+        self.user1 = User.objects.create_user(
+            username="first_user",
+            email="first_user@testmail.ru",
+            password="12345",
+        )
+        self.post1 = Post.objects.create(
+            text="test message1", author=self.user1,
+        )
+        self.client.force_login(self.user1)
+        self.user2 = User.objects.create_user(
+            username="second_user",
+            email="second_user@testmail.ru",
+            password="12345",
+        )
+        self.post2 = Post.objects.create(
+            text="test message2", author=self.user2,
+        )
+        self.client3 = Client()
+        self.user3 = User.objects.create_user(
+            username="third_user",
+            email="third_user@testmail.ru",
+            password="12345",
+        )
+        self.client3.force_login(self.user3)
+        self.client_anon = Client()
 
-        self.assertNotEqual(cache.get('index_page', 'nothing'), 'nothing')
+    def test_following_and_unfollowing_authuser(self):
+        print("Test 2-1. Follow and unfollow by auth user")
+        user2_profile = self.client.get(
+            reverse("profile",
+                    kwargs={"username": self.user2.username})
+        )
+        self.assertContains(user2_profile, "Подписаться")
+        self.client.get(reverse("profile_follow",
+                                kwargs={"username": self.user2.username})
+                        )
+        user2_profile = self.client.get(
+            reverse("profile",
+                    kwargs={"username": self.user2.username})
+        )
+        self.assertContains(user2_profile, "Отписаться")
+        self.assertEqual(len(Follow.objects.all()), 1)
+        self.client.get(reverse("profile_unfollow",
+                                kwargs={"username": self.user2.username})
+                        )
+        user2_profile = self.client.get(
+            reverse("profile",
+                    kwargs={"username": self.user2.username})
+        )
+        self.assertContains(user2_profile, "Подписаться")
+        self.assertEqual(len(Follow.objects.all()), 0)
+
+    def test_following_post_in_lent(self):
+        print("Test 2-2. new post in follow-lent ",
+              "for followers and not post for unfollowers")
+        response_code = self.client.get(
+            reverse("profile_follow",
+                    kwargs={"username": self.user2.username})
+        )
+        self.assertEqual(len(Follow.objects.all()), 1)
+        text_post_user_2 = "new post for followers"
+        response_code = self.client.get(reverse("follow_index"))
+        self.assertNotContains(response_code, text_post_user_2)
+        self.post3 = Post.objects.create(
+            text=text_post_user_2, author=self.user2,
+        )
+        response_code = self.client.get(reverse("follow_index"))
+        self.assertContains(response_code, text_post_user_2)
+        response_code = self.client3.get(reverse("follow_index"))
+        self.assertNotContains(response_code, text_post_user_2)
+
+    def test_only_auth_user_can_commit_post(self):
+        print("Test 2-2. Add new commit by auth user")
+        post_1 = Post.objects.get(pk=1)
+        text_comment = "Commentary1"
+        text_comment2 = "Commentary2"
+        self.client.post(reverse("add_comment",
+                                 kwargs={"username": self.user1.username,
+                                         "post_id": post_1.id,
+                                         }
+                                 ),
+                         {"text": text_comment}
+                         )
+        response_code = self.client.get(
+            reverse("post",
+                    kwargs={"username": self.user1.username,
+                            "post_id": post_1.id},
+                    )
+        )
+        self.assertContains(response_code, text_comment)
+        self.client_anon.post(reverse("add_comment",
+                                      kwargs={"username": self.user1.username,
+                                              "post_id": post_1.id,
+                                              }), {"text": text_comment2})
+        response_code = self.client.get(
+            reverse("post",
+                    kwargs={"username": self.user1.username,
+                            "post_id": post_1.id},
+                    )
+        )
+        self.assertNotContains(response_code, text_comment2)
