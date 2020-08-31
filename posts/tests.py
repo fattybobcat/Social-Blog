@@ -123,6 +123,21 @@ class PostTest(TestCase):
                 respose = self.client.post(url)
                 self.assertContains(respose, "<img")
 
+    def test_cache(self):
+        print("Test 9. test cache")
+        response_before_post = self.client.get(reverse('index'))
+        post = Post.objects.create(
+            author=self.user,
+            group=self.group,
+            text='test cache post')
+        response_after_post = self.client.get(reverse('index'))
+        self.assertEqual(response_before_post.content, response_after_post.content)
+        self.assertNotContains(response_before_post, post.text)
+        cache.clear()
+        response_after_cache = self.client.get(reverse('index'))
+        self.assertNotEqual(response_after_post.content, response_after_cache.content)
+        self.assertContains(response_after_cache, post.text)
+
     def test_load_no_mage(self):
         print("Test 8. Not image load in post")
         not_img = SimpleUploadedFile(
