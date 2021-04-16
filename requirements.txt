@@ -23,4 +23,4 @@ zipp==2.2.0               # via importlib-metadata
 lazy-object-proxy
 isort
 pycodestyle==2.6.0
-django-debug-toolbar==2.2
+django-debug-toolbar==2.2.1
